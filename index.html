@@ -21,6 +21,8 @@
     .accent-text { color: #ff740e; }
     .accent-border { border-color: #ff740e; }
     .accent-gradient { background: linear-gradient(to right, #ff740e, #ff8c38); }
+    .scrollbar-none::-webkit-scrollbar { display: none; }
+    .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
 <body id="app-body" class="bg-gradient-to-b from-sky-400 to-sky-600 text-slate-100 min-h-screen font-sans flex flex-col justify-between">
@@ -83,25 +85,25 @@
   <div class="fixed bottom-0 left-0 right-0 bg-slate-950/85 backdrop-blur-2xl border-t border-white/15 p-4 shadow-2xl z-50">
     <div class="max-w-md mx-auto space-y-3">
       
-      <!-- Búsqueda Manual de Ubicación Directa -->
+      <!-- Búsqueda Manual de Barrio o Localidad -->
       <div class="flex gap-2">
         <div class="relative flex-1">
           <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
             <i class="fa-solid fa-location-dot accent-text text-xs"></i>
           </span>
-          <input type="text" id="city-input" placeholder="Ej: Palermo, San Isidro, La Plata..." value="Buenos Aires" class="w-full bg-black/50 border border-white/15 rounded-2xl pl-9 pr-3 py-2.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-[#ff740e] transition">
+          <input type="text" id="city-input" placeholder="Ej: Palermo, Belgrano, San Isidro..." value="Palermo, Buenos Aires" class="w-full bg-black/50 border border-white/15 rounded-2xl pl-9 pr-3 py-2.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-[#ff740e] transition">
         </div>
         <button id="btn-search" class="accent-bg hover:opacity-90 text-slate-950 font-semibold px-4 py-2.5 rounded-2xl text-xs transition shadow-md shrink-0">
           Buscar
         </button>
-        <button id="btn-gps" class="bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-2xl flex items-center justify-center transition text-xs shrink-0" title="Usar GPS exacto">
+        <button id="btn-gps" class="bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-2xl flex items-center justify-center transition text-xs shrink-0" title="Usar GPS exacto de mi ubicación">
           <i class="fa-solid fa-location-crosshairs"></i>
         </button>
       </div>
 
       <!-- Selector de Anticipación y Estado de Ubicación -->
       <div class="flex items-center justify-between gap-2 bg-black/40 border border-white/10 rounded-2xl px-3 py-2">
-        <span id="location-display" class-[11px] text-sky-200/90 font-medium truncate">Buenos Aires, Argentina</span>
+        <span id="location-display" class="text-[11px] text-sky-200/90 font-medium truncate">Palermo, Buenos Aires</span>
         <div class="flex gap-1 shrink-0" id="lead-time-selector">
           <button data-mins="15" class="px-2 py-1 rounded-xl text-[11px] font-semibold bg-transparent text-sky-200 transition">15m</button>
           <button data-mins="30" class="px-2 py-1 rounded-xl text-[11px] font-semibold accent-bg text-slate-950 shadow-md transition">30m</button>
@@ -119,8 +121,8 @@
   </div>
 
   <script>
-    let currentLat = -34.6037;
-    let currentLng = -58.3816;
+    let currentLat = -34.5885;
+    let currentLng = -58.4312;
     let leadTimeMins = 30;
     let maxCloudThreshold = 30;
     let forecastHours = [];
@@ -214,10 +216,11 @@
 
     async function fetchCityCoords(query) {
       try {
-        locationDisplay.innerText = "Buscando...";
-        const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=es`);
+        locationDisplay.innerText = "Buscando barrio...";
+        const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=es`);
         const data = await res.json();
         if (data.results && data.results.length > 0) {
+          // Filtrar y priorizar resultados específicos en Argentina
           const loc = data.results.find(r => r.country === "Argentina") || data.results[0];
           currentLat = loc.latitude;
           currentLng = loc.longitude;
@@ -225,7 +228,7 @@
           locationDisplay.innerText = `${loc.name}${adminInfo}`;
           fetchWeatherData();
         } else {
-          locationDisplay.innerText = "Ubicación no encontrada";
+          locationDisplay.innerText = "Barrio no encontrado";
         }
       } catch (err) {
         locationDisplay.innerText = "Error de búsqueda";
@@ -326,8 +329,8 @@
       }
     });
 
-    // Iniciar con Buenos Aires por defecto
-    fetchCityCoords('Buenos Aires');
+    // Iniciar con Palermo (CABA) para probar precisión por barrio
+    fetchCityCoords('Palermo, Buenos Aires');
     setInterval(fetchWeatherData, 10 * 60 * 1000);
   </script>
 </body>
