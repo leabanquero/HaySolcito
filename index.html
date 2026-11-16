@@ -15,18 +15,20 @@
     body {
       padding-top: env(safe-area-inset-top);
       padding-bottom: env(safe-area-inset-bottom);
-      transition: background 1s ease-in-out;
+      transition: background 1.2s ease-in-out;
     }
     .accent-bg { background-color: #ff740e; }
     .accent-text { color: #ff740e; }
-    .accent-border { border-color: #ff740e; }
     .accent-gradient { background: linear-gradient(to right, #ff740e, #ff8c38); }
+    /* Ocultar barra de desplazamiento manteniendo scroll fluido */
+    .scrollbar-none::-webkit-scrollbar { display: none; }
+    .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
 <body id="app-body" class="bg-gradient-to-b from-sky-400 to-sky-600 text-slate-100 min-h-screen font-sans flex flex-col justify-between">
-  
-  <!-- Contenido Principal (Zona Superior / Lectura) -->
-  <div class="max-w-md w-full mx-auto p-4 flex-1 pb-32">
+
+  <!-- Zona Superior / Contenido Principal -->
+  <div class="max-w-md w-full mx-auto p-4 flex-1 pb-44">
     <!-- Header -->
     <header class="flex items-center justify-between py-3 px-4 border-b border-white/20 mb-5 backdrop-blur-md rounded-2xl bg-black/10 shadow-sm">
       <div class="flex items-center gap-2.5">
@@ -35,7 +37,7 @@
         </div>
         <div>
           <h1 class="font-bold text-base leading-tight accent-text tracking-tight">HaySolcito</h1>
-          <p class="text-[11px] text-sky-100/80">Detector de Ventanas de Sol</p>
+          <p class="text-[11px] text-sky-100/80">Ventanas de sol precisas</p>
         </div>
       </div>
       <button id="btn-sound-test" class="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 backdrop-blur-md font-medium">
@@ -45,7 +47,7 @@
 
     <!-- Estado Actual y Próxima Ventana -->
     <section class="bg-black/25 backdrop-blur-2xl rounded-3xl p-5 mb-5 border border-white/15 shadow-2xl relative overflow-hidden">
-      <div id="status-card" class="space-y-4">
+      <div class="space-y-4">
         <div class="flex items-center justify-between">
           <span class="text-xs font-semibold tracking-wider text-sky-200/80 uppercase">Estado en este momento</span>
           <span id="current-cloud-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-white/20 text-white backdrop-blur-md">--% nubes</span>
@@ -55,14 +57,14 @@
             <i class="fa-solid fa-spinner fa-spin"></i>
           </div>
           <div>
-            <h2 id="current-status-title" class="text-lg font-bold text-white leading-snug">Consultando clima...</h2>
-            <p id="current-status-desc" class="text-xs text-sky-100/80">Analizando cobertura de nubes hora por hora.</p>
+            <h2 id="current-status-title" class="text-lg font-bold text-white leading-snug">Consultando cielo...</h2>
+            <p id="current-status-desc" class="text-xs text-sky-100/80">Analizando satélite meteorológico.</p>
           </div>
         </div>
 
         <div class="pt-4 border-t border-white/15">
           <span class="text-xs font-semibold tracking-wider accent-text uppercase block mb-1">Próxima ventana de sol</span>
-          <div id="next-window-box" class="flex items-baseline justify-between">
+          <div class="flex items-baseline justify-between">
             <div id="next-window-time" class="text-2xl font-black text-white">--:--</div>
             <div id="next-window-countdown" class="text-xs font-semibold accent-text bg-[#ff740e]/20 border border-[#ff740e]/30 px-3 py-1.5 rounded-xl backdrop-blur-md">Calculando...</div>
           </div>
@@ -72,85 +74,63 @@
 
     <!-- Pronóstico de Nubosidad del Día -->
     <section class="bg-black/20 backdrop-blur-xl rounded-3xl p-4 border border-white/10 shadow-xl">
-      <h3 class="text-xs font-semibold text-sky-200/80 mb-3 uppercase tracking-wider">Hoy: Nubosidad hora por hora</h3>
+      <h3 class="text-xs font-semibold text-sky-200/80 mb-3 uppercase tracking-wider">Nubosidad hora por hora</h3>
       <div id="hourly-forecast" class="flex gap-2 overflow-x-auto pb-2 text-center scrollbar-none">
-        <div class="text-xs text-sky-200 py-4 w-full">Cargando datos hora por hora...</div>
+        <div class="text-xs text-sky-200 py-4 w-full">Cargando datos locales...</div>
       </div>
     </section>
   </div>
 
   <!-- Dock Inferior Ergonómico (Thumb-Zone para una sola mano) -->
-  <div class="fixed bottom-0 left-0 right-0 bg-slate-950/80 backdrop-blur-2xl border-t border-white/15 p-4 shadow-2xl z-50">
+  <div class="fixed bottom-0 left-0 right-0 bg-slate-950/85 backdrop-blur-2xl border-t border-white/15 p-4 shadow-2xl z-50">
     <div class="max-w-md mx-auto space-y-3">
       
-      <!-- Ubicación y Ciudad -->
-      <div class="flex items-center justify-between bg-black/40 border border-white/10 rounded-2xl px-3.5 py-2.5">
-        <div class="flex items-center gap-2 overflow-hidden">
-          <i class="fa-solid fa-location-dot accent-text text-sm shrink-0"></i>
-          <span id="location-display" class="text-xs font-medium text-white truncate">Buenos Aires, Argentina</span>
+      <!-- Entrada manual de Ubicación Precisa (Barrio / Localidad) -->
+      <div class="flex gap-2">
+        <div class="relative flex-1">
+          <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <i class="fa-solid fa-location-dot accent-text text-xs"></i>
+          </span>
+          <input type="text" id="city-input" placeholder="Ej: Palermo, San Isidro, La Plata..." value="Palermo, Buenos Aires" class="w-full bg-black/50 border border-white/15 rounded-2xl pl-9 pr-3 py-2.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-[#ff740e] transition">
         </div>
-        <div class="flex items-center gap-1.5 shrink-0">
-          <button id="btn-gps" class="bg-white/10 hover:bg-white/20 text-white w-8 h-8 rounded-xl flex items-center justify-center transition text-xs" title="Usar GPS exacto">
-            <i class="fa-solid fa-location-crosshairs"></i>
-          </button>
-          <button id="btn-open-search" class="accent-bg hover:opacity-90 text-slate-950 px-3 py-1.5 rounded-xl text-xs font-semibold transition">
-            Cambiar
-          </button>
+        <button id="btn-search" class="accent-bg hover:opacity-90 text-slate-950 font-semibold px-4 py-2.5 rounded-2xl text-xs transition shadow-md shrink-0">
+          Buscar
+        </button>
+        <button id="btn-gps" class="bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-2xl flex items-center justify-center transition text-xs shrink-0" title="Usar GPS exacto">
+          <i class="fa-solid fa-location-crosshairs"></i>
+        </button>
+      </div>
+
+      <!-- Selector de Anticipación y Estado -->
+      <div class="flex items-center justify-between gap-2 bg-black/40 border border-white/10 rounded-2xl px-3 py-2">
+        <span id="location-display" class="text-[11px] text-sky-200/90 font-medium truncate">Ubicación precisa</span>
+        <div class="flex gap-1 shrink-0" id="seg">
+          <!-- Generado por JS -->
         </div>
       </div>
 
-      <!-- Selector de Anticipación -->
-      <div class="flex items-center justify-between gap-1 bg-black/40 border border-white/10 rounded-2xl p-1.5">
-        <span class="text-[11px] font-semibold text-sky-200/80 pl-2 uppercase tracking-wider">Aviso:</span>
-        <div class="grid grid-cols-4 gap-1 flex-1" id="lead-time-selector">
-          <button data-mins="15" class="py-1.5 rounded-xl text-xs font-semibold bg-transparent text-sky-200 transition">15m</button>
-          <button data-mins="30" class="py-1.5 rounded-xl text-xs font-semibold accent-bg text-slate-950 shadow-md transition">30m</button>
-          <button data-mins="45" class="py-1.5 rounded-xl text-xs font-semibold bg-transparent text-sky-200 transition">45m</button>
-          <button data-mins="60" class="py-1.5 rounded-xl text-xs font-semibold bg-transparent text-sky-200 transition">60m</button>
-        </div>
-      </div>
-
-      <!-- Botón de Activar Alarma Push -->
-      <button id="btn-notify-permission" class="w-full accent-gradient hover:opacity-90 text-slate-950 font-bold py-3 rounded-2xl text-xs shadow-lg transition flex items-center justify-center gap-2">
+      <!-- Botón de Activar Alarma -->
+      <button id="notifBtn" class="w-full accent-gradient hover:opacity-90 text-slate-950 font-bold py-3 rounded-2xl text-xs shadow-lg transition flex items-center justify-center gap-2">
         <i class="fa-solid fa-bell"></i> Activar Notificaciones de Alarma
       </button>
 
     </div>
   </div>
 
-  <!-- Modal de Búsqueda de Ciudad -->
-  <div id="city-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-white/15 rounded-3xl p-5 max-w-sm w-full shadow-2xl space-y-4">
-      <div class="flex justify-between items-center">
-        <h3 class="text-sm font-bold text-white uppercase tracking-wider">Buscar Barrio o Localidad</h3>
-        <button id="btn-close-modal" class="text-slate-400 hover:text-white text-base px-2">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-      <div class="flex gap-2">
-        <input type="text" id="city-input" placeholder="Ej: Palermo, San Isidro, La Plata..." class="flex-1 bg-black/40 border border-white/10 rounded-2xl px-3.5 py-2.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-[#ff740e] transition">
-        <button id="btn-search" class="accent-bg hover:opacity-90 text-slate-950 font-semibold px-4 rounded-2xl text-xs transition">
-          Buscar
-        </button>
-      </div>
-      <div class="text-[11px] text-slate-400">
-        Ingresá tu barrio (ej. Palermo, Belgrano) o localidad exacta para afinar la precisión del cielo.
-      </div>
-    </div>
-  </div>
+  <!-- Toast flotante -->
+  <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 -translate-y-40 bg-slate-900/90 text-white border border-white/20 backdrop-blur-2xl px-4 py-3 rounded-2xl shadow-2xl transition-all duration-400 max-w-[90%] text-xs z-50"></div>
 
   <script>
-    let currentLat = -34.6037;
-    let currentLng = -58.3816;
-    let leadTimeMins = 30;
-    let maxCloudThreshold = 30;
+    const MINUTES = [15, 30, 45, 60];
+    let minutes = 30;
+    let currentLat = -34.5885; // Coordenada base (ej. Palermo)
+    let currentLng = -58.4312;
     let forecastHours = [];
+    const maxCloudThreshold = 30; // Consideramos "sol/ventana" con <= 30% de nubes
 
     const appBody = document.getElementById('app-body');
-    const cityModal = document.getElementById('city-modal');
     const cityInput = document.getElementById('city-input');
     const locationDisplay = document.getElementById('location-display');
-    const leadTimeSelector = document.getElementById('lead-time-selector');
     const currentCloudBadge = document.getElementById('current-cloud-badge');
     const currentIcon = document.getElementById('current-icon');
     const currentStatusTitle = document.getElementById('current-status-title');
@@ -176,11 +156,195 @@
 
     document.getElementById('btn-sound-test').addEventListener('click', playAlertSound);
 
-    document.getElementById('btn-open-search').addEventListener('click', () => { cityModal.classList.remove('hidden'); });
-    document.getElementById('btn-close-modal').addEventListener('click', () => { cityModal.classList.add('hidden'); });
-
+    // Sistema de Fondo Realista según Nubosidad Actual (10 niveles)
     function updateDynamicBackground(cloudCover) {
       if (cloudCover <= 10) {
         appBody.className = "bg-gradient-to-b from-sky-400 via-sky-500 to-blue-600 text-slate-100 min-h-screen font-sans flex flex-col justify-between";
       } else if (cloudCover <= 20) {
         appBody.className = "bg-gradient-to-b from-sky-400 via-sky-500 to-blue-700 text-slate-100 min-h-screen font-sans flex flex-col justify-between";
+      } else if (cloudCover <= 30) {
+        appBody.className = "bg-gradient-to-b from-sky-500 via-blue-600 to-indigo-700 text-slate-100 min-h-screen font-sans flex flex-col justify-between";
+      } else if (cloudCover <= 40) {
+        appBody.className = "bg-gradient-to-b from-sky-500 via-blue-700 to-slate-700 text-slate-100 min-h-screen font-sans flex flex-col justify-between";
+      } else if (cloudCover <= 50) {
+        appBody.className = "bg-gradient-to-b from-slate-400 via-slate-500 to-slate-700 text-slate-100 min-h-screen font-sans flex flex-col justify-between";
+      } else if (cloudCover <= 60) {
+        appBody.className = "bg-gradient-to-b from-slate-500 via-slate-600 to-slate-800 text-slate-100 min-h-screen font-sans flex flex-col justify-between";
+      } else if (cloudCover <= 70) {
+        appBody.className = "bg-gradient-to-b from-slate-600 via-slate-700 to-zinc-800 text-slate-100 min-h-screen font-sans flex flex-col justify-between";
+      } else if (cloudCover <= 80) {
+        appBody.className = "bg-gradient-to-b from-slate-700 via-zinc-700 to-zinc-900 text-slate-100 min-h-screen font-sans flex flex-col justify-between";
+      } else if (cloudCover <= 90) {
+        appBody.className = "bg-gradient-to-b from-zinc-700 via-zinc-800 to-slate-950 text-slate-100 min-h-screen font-sans flex flex-col justify-between";
+      } else {
+        appBody.className = "bg-gradient-to-b from-zinc-800 via-slate-900 to-stone-950 text-slate-100 min-h-screen font-sans flex flex-col justify-between";
+      }
+    }
+
+    function renderSeg() {
+      const box = document.getElementById('seg');
+      box.innerHTML = '';
+      MINUTES.forEach(m => {
+        const b = document.createElement('button');
+        b.textContent = m + 'm';
+        b.className = `px-2 py-1 rounded-xl text-[11px] font-semibold transition ${m === minutes ? 'accent-bg text-slate-950 shadow-md' : 'bg-transparent text-sky-200'}`;
+        b.onclick = () => { minutes = m; renderSeg(); evaluateSunWindows(); };
+        box.appendChild(b);
+      });
+    }
+
+    function toast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.transform = 'translateX(-50%) translateY(0)';
+      setTimeout(() => { t.style.transform = 'translateX(-50%) translateY(-160px)'; }, 4000);
+    }
+
+    // Geocodificación precisa por texto libre (Barrios, Localidades, Partidos)
+    async function fetchLocationCoords(query) {
+      try {
+        locationDisplay.textContent = "Buscando zona...";
+        const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=es`);
+        const data = await res.json();
+        if (data.results && data.results.length > 0) {
+          // Priorizar resultados en Argentina
+          const loc = data.results.find(r => r.country === "Argentina") || data.results[0];
+          currentLat = loc.latitude;
+          currentLng = loc.longitude;
+          const detail = `${loc.name}${loc.admin1 ? ', ' + loc.admin1 : ''}`;
+          locationDisplay.textContent = detail;
+          fetchWeatherData();
+        } else {
+          locationDisplay.textContent = "Zona no encontrada";
+          toast("⚠️ No se encontró esa ubicación exacta.");
+        }
+      } catch (err) {
+        locationDisplay.textContent = "Error de conexión";
+      }
+    }
+
+    // Obtener clima de Open-Meteo con alta precisión horaria
+    async function fetchWeatherData() {
+      try {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${currentLat}&longitude=${currentLng}&hourly=cloud_cover,weather_code&timezone=auto`;
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        forecastHours = data.hourly.time.map((t, idx) => ({
+          time: new Date(t),
+          cloudCover: data.hourly.cloud_cover[idx]
+        }));
+
+        evaluateSunWindows();
+      } catch (err) {
+        currentStatusTitle.textContent = "Error al conectar con Open-Meteo";
+      }
+    }
+
+    function evaluateSunWindows() {
+      if (!forecastHours.length) return;
+      const now = new Date();
+      const futureHours = forecastHours.filter(h => h.time >= new Date(now.getTime() - 30 * 60000));
+      if (!futureHours.length) return;
+
+      const current = futureHours[0];
+      currentCloudBadge.textContent = `${current.cloudCover}% nubes`;
+      updateDynamicBackground(current.cloudCover);
+
+      if (current.cloudCover <= maxCloudThreshold) {
+        currentIcon.innerHTML = `<i class="fa-solid fa-sun accent-text sun-pulse"></i>`;
+        currentStatusTitle.textContent = "¡Hay sol en este momento!";
+        currentStatusDesc.textContent = "Ventana despejada activa en tu zona.";
+      } else {
+        currentIcon.innerHTML = `<i class="fa-solid fa-cloud text-white/90"></i>`;
+        currentStatusTitle.textContent = "Cielo nublado";
+        currentStatusDesc.textContent = "Monitoreando aperturas de sol cercanas.";
+      }
+
+      // Buscar próxima ventana con <= 30% de nubes
+      const nextSun = futureHours.find(h => h.cloudCover <= maxCloudThreshold && h.time > now);
+
+      if (nextSun) {
+        const timeStr = nextSun.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const diffMins = Math.round((nextSun.time - now) / 60000);
+        
+        nextWindowTime.textContent = timeStr;
+        nextWindowCountdown.textContent = `En ${diffMins} min (${nextSun.cloudCover}% nubes)`;
+
+        // Alerta si estamos dentro de la ventana configurada
+        if (diffMins <= minutes && diffMins > minutes - 15) {
+          playAlertSound();
+          toast(`☀️ ¡HaySolcito: Se despeja en ${diffMins} min (${timeStr})!`);
+        }
+      } else {
+        nextWindowTime.textContent = "--:--";
+        nextWindowCountdown.textContent = "Sin sol despejado hoy";
+      }
+
+      renderHourlyList(futureHours.slice(0, 12));
+    }
+
+    function renderHourlyList(hours) {
+      hourlyForecast.innerHTML = hours.map(h => {
+        const timeLabel = h.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const isSun = h.cloudCover <= maxCloudThreshold;
+        return `
+          <div class="min-w-[65px] flex-1 bg-black/30 backdrop-blur-md rounded-2xl p-2.5 border ${isSun ? 'border-[#ff740e]/60 bg-[#ff740e]/10' : 'border-white/10'}">
+            <div class="text-[10px] text-sky-200 font-semibold mb-1">${timeLabel}</div>
+            <div class="text-lg my-1 ${isSun ? 'accent-text' : 'text-white/80'}">
+              <i class="fa-solid ${isSun ? 'fa-sun' : 'fa-cloud'}"></i>
+            </div>
+            <div class="text-[11px] font-bold ${isSun ? 'accent-text' : 'text-white'}">${h.cloudCover}%</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Botones y Eventos
+    document.getElementById('btn-search').addEventListener('click', () => {
+      const val = cityInput.value.trim();
+      if (val) fetchLocationCoords(val);
+    });
+
+    cityInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && cityInput.value.trim()) {
+        fetchLocationCoords(cityInput.value);
+      }
+    });
+
+    document.getElementById('btn-gps').addEventListener('click', () => {
+      if (navigator.geolocation) {
+        locationDisplay.textContent = "Obteniendo GPS exacto...";
+        navigator.geolocation.getCurrentPosition(pos => {
+          currentLat = pos.coords.latitude;
+          currentLng = pos.coords.longitude;
+          locationDisplay.textContent = `GPS: ${currentLat.toFixed(2)}, ${currentLng.toFixed(2)}`;
+          fetchWeatherData();
+          toast("📍 Ubicación GPS precisa cargada");
+        }, () => {
+          toast("⚠️ No se pudo obtener la posición GPS.");
+        });
+      }
+    });
+
+    document.getElementById('notifBtn').addEventListener('click', () => {
+      if ('Notification' in window) {
+        Notification.requestPermission().then(perm => {
+          if (perm === 'granted') {
+            toast('🔔 Notificaciones de HaySolcito activadas');
+          } else {
+            toast('⚠️ Permisos de notificación denegados.');
+          }
+        });
+      } else {
+        toast('⚠️ Tu navegador no soporta notificaciones.');
+      }
+    });
+
+    // Inicializar
+    renderSeg();
+    fetchLocationCoords('Palermo, Buenos Aires');
+    setInterval(fetchWeatherData, 10 * 60 * 1000); // Actualizar cada 10 min
+  </script>
+</body>
+</html>
