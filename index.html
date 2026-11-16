@@ -15,19 +15,17 @@
     body {
       padding-top: env(safe-area-inset-top);
       padding-bottom: env(safe-area-inset-bottom);
-      transition: background 1.2s ease-in-out;
+      transition: background 1s ease-in-out;
     }
     .accent-bg { background-color: #ff740e; }
     .accent-text { color: #ff740e; }
+    .accent-border { border-color: #ff740e; }
     .accent-gradient { background: linear-gradient(to right, #ff740e, #ff8c38); }
-    /* Ocultar barra de desplazamiento manteniendo scroll fluido */
-    .scrollbar-none::-webkit-scrollbar { display: none; }
-    .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
 <body id="app-body" class="bg-gradient-to-b from-sky-400 to-sky-600 text-slate-100 min-h-screen font-sans flex flex-col justify-between">
-
-  <!-- Zona Superior / Contenido Principal -->
+  
+  <!-- Contenido Principal (Zona Superior / Lectura) -->
   <div class="max-w-md w-full mx-auto p-4 flex-1 pb-44">
     <!-- Header -->
     <header class="flex items-center justify-between py-3 px-4 border-b border-white/20 mb-5 backdrop-blur-md rounded-2xl bg-black/10 shadow-sm">
@@ -37,7 +35,7 @@
         </div>
         <div>
           <h1 class="font-bold text-base leading-tight accent-text tracking-tight">HaySolcito</h1>
-          <p class="text-[11px] text-sky-100/80">Ventanas de sol precisas</p>
+          <p class="text-[11px] text-sky-100/80">Detector de Ventanas de Sol</p>
         </div>
       </div>
       <button id="btn-sound-test" class="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 backdrop-blur-md font-medium">
@@ -47,7 +45,7 @@
 
     <!-- Estado Actual y Próxima Ventana -->
     <section class="bg-black/25 backdrop-blur-2xl rounded-3xl p-5 mb-5 border border-white/15 shadow-2xl relative overflow-hidden">
-      <div class="space-y-4">
+      <div id="status-card" class="space-y-4">
         <div class="flex items-center justify-between">
           <span class="text-xs font-semibold tracking-wider text-sky-200/80 uppercase">Estado en este momento</span>
           <span id="current-cloud-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-white/20 text-white backdrop-blur-md">--% nubes</span>
@@ -57,14 +55,14 @@
             <i class="fa-solid fa-spinner fa-spin"></i>
           </div>
           <div>
-            <h2 id="current-status-title" class="text-lg font-bold text-white leading-snug">Consultando cielo...</h2>
-            <p id="current-status-desc" class="text-xs text-sky-100/80">Analizando satélite meteorológico.</p>
+            <h2 id="current-status-title" class="text-lg font-bold text-white leading-snug">Consultando clima...</h2>
+            <p id="current-status-desc" class="text-xs text-sky-100/80">Analizando cobertura de nubes hora por hora.</p>
           </div>
         </div>
 
         <div class="pt-4 border-t border-white/15">
           <span class="text-xs font-semibold tracking-wider accent-text uppercase block mb-1">Próxima ventana de sol</span>
-          <div class="flex items-baseline justify-between">
+          <div id="next-window-box" class="flex items-baseline justify-between">
             <div id="next-window-time" class="text-2xl font-black text-white">--:--</div>
             <div id="next-window-countdown" class="text-xs font-semibold accent-text bg-[#ff740e]/20 border border-[#ff740e]/30 px-3 py-1.5 rounded-xl backdrop-blur-md">Calculando...</div>
           </div>
@@ -74,9 +72,9 @@
 
     <!-- Pronóstico de Nubosidad del Día -->
     <section class="bg-black/20 backdrop-blur-xl rounded-3xl p-4 border border-white/10 shadow-xl">
-      <h3 class="text-xs font-semibold text-sky-200/80 mb-3 uppercase tracking-wider">Nubosidad hora por hora</h3>
+      <h3 class="text-xs font-semibold text-sky-200/80 mb-3 uppercase tracking-wider">Hoy: Nubosidad hora por hora</h3>
       <div id="hourly-forecast" class="flex gap-2 overflow-x-auto pb-2 text-center scrollbar-none">
-        <div class="text-xs text-sky-200 py-4 w-full">Cargando datos locales...</div>
+        <div class="text-xs text-sky-200 py-4 w-full">Cargando datos hora por hora...</div>
       </div>
     </section>
   </div>
@@ -85,13 +83,13 @@
   <div class="fixed bottom-0 left-0 right-0 bg-slate-950/85 backdrop-blur-2xl border-t border-white/15 p-4 shadow-2xl z-50">
     <div class="max-w-md mx-auto space-y-3">
       
-      <!-- Entrada manual de Ubicación Precisa (Barrio / Localidad) -->
+      <!-- Búsqueda Manual de Ubicación Directa -->
       <div class="flex gap-2">
         <div class="relative flex-1">
           <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
             <i class="fa-solid fa-location-dot accent-text text-xs"></i>
           </span>
-          <input type="text" id="city-input" placeholder="Ej: Palermo, San Isidro, La Plata..." value="Palermo, Buenos Aires" class="w-full bg-black/50 border border-white/15 rounded-2xl pl-9 pr-3 py-2.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-[#ff740e] transition">
+          <input type="text" id="city-input" placeholder="Ej: Palermo, San Isidro, La Plata..." value="Buenos Aires" class="w-full bg-black/50 border border-white/15 rounded-2xl pl-9 pr-3 py-2.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-[#ff740e] transition">
         </div>
         <button id="btn-search" class="accent-bg hover:opacity-90 text-slate-950 font-semibold px-4 py-2.5 rounded-2xl text-xs transition shadow-md shrink-0">
           Buscar
@@ -101,36 +99,36 @@
         </button>
       </div>
 
-      <!-- Selector de Anticipación y Estado -->
+      <!-- Selector de Anticipación y Estado de Ubicación -->
       <div class="flex items-center justify-between gap-2 bg-black/40 border border-white/10 rounded-2xl px-3 py-2">
-        <span id="location-display" class="text-[11px] text-sky-200/90 font-medium truncate">Ubicación precisa</span>
-        <div class="flex gap-1 shrink-0" id="seg">
-          <!-- Generado por JS -->
+        <span id="location-display" class-[11px] text-sky-200/90 font-medium truncate">Buenos Aires, Argentina</span>
+        <div class="flex gap-1 shrink-0" id="lead-time-selector">
+          <button data-mins="15" class="px-2 py-1 rounded-xl text-[11px] font-semibold bg-transparent text-sky-200 transition">15m</button>
+          <button data-mins="30" class="px-2 py-1 rounded-xl text-[11px] font-semibold accent-bg text-slate-950 shadow-md transition">30m</button>
+          <button data-mins="45" class="px-2 py-1 rounded-xl text-[11px] font-semibold bg-transparent text-sky-200 transition">45m</button>
+          <button data-mins="60" class="px-2 py-1 rounded-xl text-[11px] font-semibold bg-transparent text-sky-200 transition">60m</button>
         </div>
       </div>
 
-      <!-- Botón de Activar Alarma -->
-      <button id="notifBtn" class="w-full accent-gradient hover:opacity-90 text-slate-950 font-bold py-3 rounded-2xl text-xs shadow-lg transition flex items-center justify-center gap-2">
+      <!-- Botón de Activar Alarma Push -->
+      <button id="btn-notify-permission" class="w-full accent-gradient hover:opacity-90 text-slate-950 font-bold py-3 rounded-2xl text-xs shadow-lg transition flex items-center justify-center gap-2">
         <i class="fa-solid fa-bell"></i> Activar Notificaciones de Alarma
       </button>
 
     </div>
   </div>
 
-  <!-- Toast flotante -->
-  <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 -translate-y-40 bg-slate-900/90 text-white border border-white/20 backdrop-blur-2xl px-4 py-3 rounded-2xl shadow-2xl transition-all duration-400 max-w-[90%] text-xs z-50"></div>
-
   <script>
-    const MINUTES = [15, 30, 45, 60];
-    let minutes = 30;
-    let currentLat = -34.5885; // Coordenada base (ej. Palermo)
-    let currentLng = -58.4312;
+    let currentLat = -34.6037;
+    let currentLng = -58.3816;
+    let leadTimeMins = 30;
+    let maxCloudThreshold = 30;
     let forecastHours = [];
-    const maxCloudThreshold = 30; // Consideramos "sol/ventana" con <= 30% de nubes
 
     const appBody = document.getElementById('app-body');
     const cityInput = document.getElementById('city-input');
     const locationDisplay = document.getElementById('location-display');
+    const leadTimeSelector = document.getElementById('lead-time-selector');
     const currentCloudBadge = document.getElementById('current-cloud-badge');
     const currentIcon = document.getElementById('current-icon');
     const currentStatusTitle = document.getElementById('current-status-title');
@@ -156,7 +154,6 @@
 
     document.getElementById('btn-sound-test').addEventListener('click', playAlertSound);
 
-    // Sistema de Fondo Realista según Nubosidad Actual (10 niveles)
     function updateDynamicBackground(cloudCover) {
       if (cloudCover <= 10) {
         appBody.className = "bg-gradient-to-b from-sky-400 via-sky-500 to-blue-600 text-slate-100 min-h-screen font-sans flex flex-col justify-between";
@@ -181,49 +178,60 @@
       }
     }
 
-    function renderSeg() {
-      const box = document.getElementById('seg');
-      box.innerHTML = '';
-      MINUTES.forEach(m => {
-        const b = document.createElement('button');
-        b.textContent = m + 'm';
-        b.className = `px-2 py-1 rounded-xl text-[11px] font-semibold transition ${m === minutes ? 'accent-bg text-slate-950 shadow-md' : 'bg-transparent text-sky-200'}`;
-        b.onclick = () => { minutes = m; renderSeg(); evaluateSunWindows(); };
-        box.appendChild(b);
+    leadTimeSelector.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        leadTimeSelector.querySelectorAll('button').forEach(b => {
+          b.className = "px-2 py-1 rounded-xl text-[11px] font-semibold bg-transparent text-sky-200 transition";
+        });
+        btn.className = "px-2 py-1 rounded-xl text-[11px] font-semibold accent-bg text-slate-950 shadow-md transition";
+        leadTimeMins = parseInt(btn.dataset.mins);
+        evaluateSunWindows();
       });
-    }
+    });
 
-    function toast(msg) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.style.transform = 'translateX(-50%) translateY(0)';
-      setTimeout(() => { t.style.transform = 'translateX(-50%) translateY(-160px)'; }, 4000);
-    }
+    document.getElementById('btn-search').addEventListener('click', () => {
+      if (cityInput.value.trim()) fetchCityCoords(cityInput.value);
+    });
+    cityInput.addEventListener('keypress', (e) => { 
+      if (e.key === 'Enter' && cityInput.value.trim()) {
+        fetchCityCoords(cityInput.value);
+      }
+    });
 
-    // Geocodificación precisa por texto libre (Barrios, Localidades, Partidos)
-    async function fetchLocationCoords(query) {
+    document.getElementById('btn-gps').addEventListener('click', () => {
+      if (navigator.geolocation) {
+        locationDisplay.innerText = "Obteniendo GPS exacto...";
+        navigator.geolocation.getCurrentPosition(pos => {
+          currentLat = pos.coords.latitude;
+          currentLng = pos.coords.longitude;
+          locationDisplay.innerText = `GPS: ${currentLat.toFixed(2)}, ${currentLng.toFixed(2)}`;
+          fetchWeatherData();
+        }, () => {
+          alert('No se pudo acceder al GPS.');
+        });
+      }
+    });
+
+    async function fetchCityCoords(query) {
       try {
-        locationDisplay.textContent = "Buscando zona...";
+        locationDisplay.innerText = "Buscando...";
         const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=es`);
         const data = await res.json();
         if (data.results && data.results.length > 0) {
-          // Priorizar resultados en Argentina
           const loc = data.results.find(r => r.country === "Argentina") || data.results[0];
           currentLat = loc.latitude;
           currentLng = loc.longitude;
-          const detail = `${loc.name}${loc.admin1 ? ', ' + loc.admin1 : ''}`;
-          locationDisplay.textContent = detail;
+          const adminInfo = loc.admin1 ? `, ${loc.admin1}` : '';
+          locationDisplay.innerText = `${loc.name}${adminInfo}`;
           fetchWeatherData();
         } else {
-          locationDisplay.textContent = "Zona no encontrada";
-          toast("⚠️ No se encontró esa ubicación exacta.");
+          locationDisplay.innerText = "Ubicación no encontrada";
         }
       } catch (err) {
-        locationDisplay.textContent = "Error de conexión";
+        locationDisplay.innerText = "Error de búsqueda";
       }
     }
 
-    // Obtener clima de Open-Meteo con alta precisión horaria
     async function fetchWeatherData() {
       try {
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${currentLat}&longitude=${currentLng}&hourly=cloud_cover,weather_code&timezone=auto`;
@@ -232,53 +240,53 @@
         
         forecastHours = data.hourly.time.map((t, idx) => ({
           time: new Date(t),
-          cloudCover: data.hourly.cloud_cover[idx]
+          cloudCover: data.hourly.cloud_cover[idx],
+          code: data.hourly.weather_code[idx]
         }));
 
         evaluateSunWindows();
       } catch (err) {
-        currentStatusTitle.textContent = "Error al conectar con Open-Meteo";
+        currentStatusTitle.innerText = "Error cargando clima";
       }
     }
 
     function evaluateSunWindows() {
       if (!forecastHours.length) return;
       const now = new Date();
+      
       const futureHours = forecastHours.filter(h => h.time >= new Date(now.getTime() - 30 * 60000));
       if (!futureHours.length) return;
 
       const current = futureHours[0];
-      currentCloudBadge.textContent = `${current.cloudCover}% nubes`;
+      currentCloudBadge.innerText = `${current.cloudCover}% nubes`;
+
       updateDynamicBackground(current.cloudCover);
 
       if (current.cloudCover <= maxCloudThreshold) {
         currentIcon.innerHTML = `<i class="fa-solid fa-sun accent-text sun-pulse"></i>`;
-        currentStatusTitle.textContent = "¡Hay sol en este momento!";
-        currentStatusDesc.textContent = "Ventana despejada activa en tu zona.";
+        currentStatusTitle.innerText = "¡Hay sol en este momento!";
+        currentStatusDesc.innerText = "Ventana de sol activa para aprovechar.";
       } else {
         currentIcon.innerHTML = `<i class="fa-solid fa-cloud text-white/90"></i>`;
-        currentStatusTitle.textContent = "Cielo nublado";
-        currentStatusDesc.textContent = "Monitoreando aperturas de sol cercanas.";
+        currentStatusTitle.innerText = "Cielo nublado";
+        currentStatusDesc.innerText = "Esperando la próxima apertura de sol.";
       }
 
-      // Buscar próxima ventana con <= 30% de nubes
       const nextSun = futureHours.find(h => h.cloudCover <= maxCloudThreshold && h.time > now);
 
       if (nextSun) {
         const timeStr = nextSun.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const diffMins = Math.round((nextSun.time - now) / 60000);
         
-        nextWindowTime.textContent = timeStr;
-        nextWindowCountdown.textContent = `En ${diffMins} min (${nextSun.cloudCover}% nubes)`;
+        nextWindowTime.innerText = timeStr;
+        nextWindowCountdown.innerText = `En ${diffMins} min (${nextSun.cloudCover}% nubes)`;
 
-        // Alerta si estamos dentro de la ventana configurada
-        if (diffMins <= minutes && diffMins > minutes - 15) {
-          playAlertSound();
-          toast(`☀️ ¡HaySolcito: Se despeja en ${diffMins} min (${timeStr})!`);
+        if (diffMins <= leadTimeMins && diffMins > leadTimeMins - 15) {
+          triggerSunAlert(timeStr, diffMins);
         }
       } else {
-        nextWindowTime.textContent = "--:--";
-        nextWindowCountdown.textContent = "Sin sol despejado hoy";
+        nextWindowTime.innerText = "--:--";
+        nextWindowCountdown.innerText = "No se prevé sol despejado hoy";
       }
 
       renderHourlyList(futureHours.slice(0, 12));
@@ -300,51 +308,27 @@
       }).join('');
     }
 
-    // Botones y Eventos
-    document.getElementById('btn-search').addEventListener('click', () => {
-      const val = cityInput.value.trim();
-      if (val) fetchLocationCoords(val);
-    });
-
-    cityInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter' && cityInput.value.trim()) {
-        fetchLocationCoords(cityInput.value);
-      }
-    });
-
-    document.getElementById('btn-gps').addEventListener('click', () => {
-      if (navigator.geolocation) {
-        locationDisplay.textContent = "Obteniendo GPS exacto...";
-        navigator.geolocation.getCurrentPosition(pos => {
-          currentLat = pos.coords.latitude;
-          currentLng = pos.coords.longitude;
-          locationDisplay.textContent = `GPS: ${currentLat.toFixed(2)}, ${currentLng.toFixed(2)}`;
-          fetchWeatherData();
-          toast("📍 Ubicación GPS precisa cargada");
-        }, () => {
-          toast("⚠️ No se pudo obtener la posición GPS.");
+    function triggerSunAlert(timeStr, minsLeft) {
+      playAlertSound();
+      if (Notification.permission === 'granted') {
+        new Notification("☀️ ¡Alerta de Sol Cercano!", {
+          body: `Se despeja el cielo en ${minsLeft} minutos (a las ${timeStr}).`,
+          icon: "https://cdn-icons-png.flaticon.com/512/869/869869.png"
         });
       }
-    });
+    }
 
-    document.getElementById('notifBtn').addEventListener('click', () => {
+    document.getElementById('btn-notify-permission').addEventListener('click', () => {
       if ('Notification' in window) {
         Notification.requestPermission().then(perm => {
-          if (perm === 'granted') {
-            toast('🔔 Notificaciones de HaySolcito activadas');
-          } else {
-            toast('⚠️ Permisos de notificación denegados.');
-          }
+          if (perm === 'granted') alert('¡Notificaciones de alarma activadas!');
         });
-      } else {
-        toast('⚠️ Tu navegador no soporta notificaciones.');
       }
     });
 
-    // Inicializar
-    renderSeg();
-    fetchLocationCoords('Palermo, Buenos Aires');
-    setInterval(fetchWeatherData, 10 * 60 * 1000); // Actualizar cada 10 min
+    // Iniciar con Buenos Aires por defecto
+    fetchCityCoords('Buenos Aires');
+    setInterval(fetchWeatherData, 10 * 60 * 1000);
   </script>
 </body>
 </html>
